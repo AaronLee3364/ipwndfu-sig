@@ -1,0 +1,86 @@
+#!/usr/bin/python
+
+import sys
+import os
+import time
+
+count = 0
+key = []
+
+
+arg2 = ""
+im4p_ = sys.argv[1]
+arg1 = ""
+
+try:
+    arg1 = sys.argv[1]
+    arg2 = sys.argv[2]
+
+except:
+    time.sleep(0)
+
+def help():
+    print("Usage: idec <PathTo.im4p> <args>")
+    print("Args")
+    print("\t-d\t\t\tDecrypt .im4p file automatilly device must be in pwned dfu")
+    print("\t-f\t\t\tShows this menu")
+    print("\t-p\t\t\tPuts the device in pwned DFU mode")
+    print("\t-patch\t\t\tCool stuff :o")
+    exit()
+
+
+print("=======================================")
+print("iDec V1.0 2020 Brandon Plank")
+print("=======================================")
+print("")
+
+
+
+if arg1 == "-h":
+    help()
+
+if arg1 == "-p":
+    os.system("./ipwndfu -p")
+    exit()
+
+if arg1 == "-patch":
+    os.system("./ipwndfu --patch")
+    exit()
+
+if arg1 == "":
+    help()
+
+
+os.system("img4 -i "+ im4p_ +" -b > /tmp/tmpimg4")
+im4p = open("/tmp/tmpimg4","r").read()
+os.system("rm /tmp/tmpimg4")
+
+
+
+os.system("./ipwndfu --decrypt-gid="+ im4p.split("\n")[0] + "  > /tmp/tmpimg4dec")
+ivkey = open("/tmp/tmpimg4dec","r").read().split("\n")[1]
+os.system("rm /tmp/tmpimg4dec")
+
+
+if ivkey == "":
+    print("The device did not send back the IVKEY")
+    print("Try reconnecting the device in dfu mode.")
+    print("")
+    exit()
+
+
+
+
+for i in ivkey:
+	if count < 64:
+		key.append(i)
+		count += 1
+print("Unencrypted Keybag = " + ivkey)
+print("Unencrypted Key = " + ''.join(key))
+print("Unencrypted IV = " + ivkey.replace(''.join(key),""))
+
+
+
+if arg2 == "-d":
+    os.system("img4 -image " + im4p_ + " " + im4p_ + ".dec" + " " + ivkey)
+    print("Saved the Decrypted file to " + im4p_ + ".dec")
